@@ -365,6 +365,27 @@ input::placeholder { color: var(--text3); }
 .gh-cell:hover { transform: scale(1.07); box-shadow: 0 2px 8px rgba(0,0,0,0.12); z-index: 1; position: relative; }
 .gh-cell .cc { font-size: 10px; font-weight: 700; display: block; color: var(--text3); }
 .gh-cell .cv { font-size: 8.5px; display: block; margin-top: 1px; line-height: 1.3; color: var(--text2); }
+/* ألوان الأصناف */
+/* باتافيا = أخضر */
+.gh-cell.cr-batavia   { background: #D6F0E0; border-color: #4CAF50; }
+.gh-cell.cr-batavia .cc { color: #1B5E20; }
+.gh-cell.cr-batavia .cv { color: #2E7D32; }
+/* أوكليف = أحمر */
+.gh-cell.cr-oakleaf   { background: #FDDEDE; border-color: #E53935; }
+.gh-cell.cr-oakleaf .cc { color: #7F0000; }
+.gh-cell.cr-oakleaf .cv { color: #B71C1C; }
+/* روسا = بينك */
+.gh-cell.cr-rosa      { background: #FCE4EC; border-color: #EC407A; }
+.gh-cell.cr-rosa .cc  { color: #880E4F; }
+.gh-cell.cr-rosa .cv  { color: #AD1457; }
+/* مختلط = بنفسجي */
+.gh-cell.cr-mixed     { background: #EDE7F6; border-color: #7E57C2; }
+.gh-cell.cr-mixed .cc { color: #311B92; }
+.gh-cell.cr-mixed .cv { color: #4527A0; }
+/* جاهز للحصاد = أصفر (يغلب على لون الصنف) */
+.gh-cell.harvest-ready { background: var(--amber-pale) !important; border-color: var(--amber-mid) !important; border-width: 2px !important; }
+.gh-cell.harvest-ready .cc { color: var(--amber-dark) !important; }
+/* fallback */
 .gh-cell.sm { background: var(--green-pale); border-color: var(--green-border); }
 .gh-cell.sm .cc { color: var(--green-dark); }
 .gh-cell.bo { background: var(--blue-pale); border-color: var(--blue-border); }
@@ -587,7 +608,10 @@ input::placeholder { color: var(--text3); }
       </div>
       <div class="legend">
         <div class="leg"><div class="leg-dot" style="background:var(--surface2)"></div>فاضية</div>
-        <div class="leg"><div class="leg-dot" style="background:var(--green-pale);border-color:var(--green-border)"></div>مزروعة</div>
+        <div class="leg"><div class="leg-dot" style="background:#D6F0E0;border-color:#4CAF50"></div>باتافيا</div>
+        <div class="leg"><div class="leg-dot" style="background:#FDDEDE;border-color:#E53935"></div>أوكليف</div>
+        <div class="leg"><div class="leg-dot" style="background:#FCE4EC;border-color:#EC407A"></div>روسا</div>
+        <div class="leg"><div class="leg-dot" style="background:#EDE7F6;border-color:#7E57C2"></div>مختلط</div>
       </div>
       <div class="gh-scroll"><div id="gh-small"></div></div>
     </div>
@@ -600,8 +624,11 @@ input::placeholder { color: var(--text3); }
       </div>
       <div class="legend">
         <div class="leg"><div class="leg-dot" style="background:var(--surface2)"></div>فاضية</div>
-        <div class="leg"><div class="leg-dot" style="background:var(--blue-pale);border-color:var(--blue-border)"></div>فيها منتج</div>
-        <div class="leg"><div class="leg-dot" style="background:var(--amber-pale);border-color:var(--amber-border)"></div>جاهزة للحصاد (+21 يوم)</div>
+        <div class="leg"><div class="leg-dot" style="background:#D6F0E0;border-color:#4CAF50"></div>باتافيا</div>
+        <div class="leg"><div class="leg-dot" style="background:#FDDEDE;border-color:#E53935"></div>أوكليف</div>
+        <div class="leg"><div class="leg-dot" style="background:#FCE4EC;border-color:#EC407A"></div>روسا</div>
+        <div class="leg"><div class="leg-dot" style="background:#EDE7F6;border-color:#7E57C2"></div>مختلط</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--amber-pale);border-color:var(--amber-mid);border-width:2px"></div>جاهزة للحصاد (+21 يوم)</div>
       </div>
       <div class="gh-scroll"><div id="gh-big"></div></div>
     </div>
@@ -795,6 +822,17 @@ function partLabel(part){
     .join('<br>');
 }
 
+function cropColorClass(counts){
+  const crops = Object.keys(counts).filter(c => counts[c] > 0);
+  if(crops.length === 0) return '';
+  if(crops.length > 1) return 'cr-mixed';
+  const c = crops[0];
+  if(c === 'باتافيا') return 'cr-batavia';
+  if(c === 'أوكليف') return 'cr-oakleaf';
+  if(c === 'روسا')   return 'cr-rosa';
+  return 'cr-mixed';
+}
+
 function makeTable(stateMap, section){
   const now = new Date();
   let html = '<table class="gh-table"><thead><tr><th></th>';
@@ -809,11 +847,12 @@ function makeTable(stateMap, section){
       const hasPlants = part && part.totalCount > 0;
       let cls = '', cv = '';
       if(hasPlants){
+        const colorCls = cropColorClass(part.counts);
         if(section === 'bg'){
           const days = part.firstDate ? (now - new Date(part.firstDate)) / 86400000 : 0;
-          cls = days >= 21 ? 'rd' : 'bo';
+          cls = days >= 21 ? `${colorCls} harvest-ready` : colorCls;
         } else {
-          cls = 'sm';
+          cls = colorCls;
         }
         cv = partLabel(part);
       }
